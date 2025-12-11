@@ -1,5 +1,5 @@
 //!
-//! The `solx` tester executable.
+//! `solx` tester executable.
 //!
 
 pub(crate) mod arguments;
@@ -30,7 +30,6 @@ fn main() {
             solx_utils::EXIT_CODE_FAILURE
         }
     };
-    unsafe { inkwell::support::shutdown_llvm() };
     std::process::exit(exit_code);
 }
 
@@ -39,14 +38,12 @@ fn main() {
 ///
 fn main_inner(arguments: Arguments) -> anyhow::Result<()> {
     println!(
-        "    {} {} v{} (LLVM build {})",
+        "    {} {} v{}",
         "Starting".bright_green().bold(),
         env!("CARGO_PKG_DESCRIPTION"),
         env!("CARGO_PKG_VERSION"),
-        inkwell::support::get_commit_id().to_string(),
     );
 
-    inkwell::support::enable_llvm_pretty_stack_trace();
     solx_codegen_evm::initialize_target();
     solx_tester::LLVMOptions::initialize(arguments.llvm_verify_each, arguments.llvm_debug_logging)?;
 
@@ -152,7 +149,7 @@ mod tests {
             benchmark: None,
             benchmark_format: solx_benchmark_converter::OutputFormat::Xlsx,
             threads: Some(1),
-            solx: Some(assert_cmd::cargo::cargo_bin("solx")),
+            solx: Some(assert_cmd::cargo::cargo_bin!("SOLX").to_path_buf()),
             toolchain: Some(solx_tester::Toolchain::IrLLVM),
             workflow: solx_tester::Workflow::BuildAndRun,
             solc_bin_config_path: Some(PathBuf::from(

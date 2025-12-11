@@ -2,18 +2,26 @@
 //! Benchmark input format.
 //!
 
+pub mod build_failures;
+pub mod compilation_time;
 pub mod error;
 pub mod foundry_gas;
 pub mod foundry_size;
 pub mod source;
+pub mod test_failures;
+pub mod testing_time;
 
 use std::path::Path;
 
 use crate::model::benchmark::Benchmark;
 
+use self::build_failures::BuildFailuresReport;
+use self::compilation_time::CompilationTimeReport;
 use self::error::Error as InputError;
 use self::foundry_gas::FoundryGasReport;
 use self::foundry_size::FoundrySizeReport;
+use self::test_failures::TestFailuresReport;
+use self::testing_time::TestingTimeReport;
 
 ///
 /// Benchmark input format.
@@ -31,6 +39,23 @@ pub struct Input {
     pub toolchain: String,
 }
 
+impl Input {
+    ///
+    /// Creates a new benchmark input.
+    ///
+    pub fn new<R: Into<Report>, S1: Into<String>, S2: Into<String>>(
+        report: R,
+        project: S1,
+        toolchain: S2,
+    ) -> Self {
+        Self {
+            data: report.into(),
+            project: project.into(),
+            toolchain: toolchain.into(),
+        }
+    }
+}
+
 ///
 /// Enum representing various benchmark formats from tooling.
 ///
@@ -43,23 +68,55 @@ pub enum Report {
     FoundryGas(FoundryGasReport),
     /// Foundry size report.
     FoundrySize(FoundrySizeReport),
+    /// Compilation time report.
+    CompilationTime(CompilationTimeReport),
+    /// Testing time report.
+    TestingTime(TestingTimeReport),
+    /// Build failures report.
+    BuildFailures(BuildFailuresReport),
+    /// Test failures report.
+    TestFailures(TestFailuresReport),
 }
 
 impl From<Benchmark> for Report {
-    fn from(benchmark: Benchmark) -> Self {
-        Self::Native(benchmark)
+    fn from(report: Benchmark) -> Self {
+        Self::Native(report)
     }
 }
 
 impl From<FoundryGasReport> for Report {
-    fn from(foundry_gas_report: FoundryGasReport) -> Self {
-        Self::FoundryGas(foundry_gas_report)
+    fn from(report: FoundryGasReport) -> Self {
+        Self::FoundryGas(report)
     }
 }
 
 impl From<FoundrySizeReport> for Report {
-    fn from(foundry_size_report: FoundrySizeReport) -> Self {
-        Self::FoundrySize(foundry_size_report)
+    fn from(report: FoundrySizeReport) -> Self {
+        Self::FoundrySize(report)
+    }
+}
+
+impl From<CompilationTimeReport> for Report {
+    fn from(report: CompilationTimeReport) -> Self {
+        Self::CompilationTime(report)
+    }
+}
+
+impl From<TestingTimeReport> for Report {
+    fn from(report: TestingTimeReport) -> Self {
+        Self::TestingTime(report)
+    }
+}
+
+impl From<BuildFailuresReport> for Report {
+    fn from(report: BuildFailuresReport) -> Self {
+        Self::BuildFailures(report)
+    }
+}
+
+impl From<TestFailuresReport> for Report {
+    fn from(report: TestFailuresReport) -> Self {
+        Self::TestFailures(report)
     }
 }
 
